@@ -29,6 +29,7 @@ GPIO.output(CTPID,GPIO.HIGH)
 # Set up I2C, working on figuring out how to manipulate values so we can connect to different GPIO pins. I'm fairly certain you can just provide the GPIO number
 i2c=busio.I2C(board.SCL, board.SDA)
 mpr121=adafruit_mpr121.MPR121(i2c)
+mpr121.setThresholds(24,6)
 flag=True
 
 try:
