@@ -209,10 +209,9 @@ def run():
 			stopThreads=True
 			ledThread.join()
 
-		# Turn off the LED and capacitive touch breakout, and rest GPIO status
+		# Turn off the LED and capacitive touch breakout
 		ledPWM.ChangeDutyCycle(0)
 		GPIO.output(CTPID,GPIO.LOW)
-		GPIO.cleanup()
 
 
 if __name__ == '__main__':
