@@ -1,6 +1,7 @@
 # P14: Pin closest to CPU is Ground
 # P12: Pin furthest from CPU is Ground
 # P4: Pin furthest from CPU is Ground (Pin 4)
+# Programs that use GPIO and i2c must be executed using sudo to give python access to the hardware
 # Imports for capacititve touch
 import RPi.GPIO as GPIO
 from time import sleep
@@ -21,20 +22,20 @@ GPIO.setwarnings(False)
 
 # Provide power to the breakout board
 CTPID=14
-GPIO.setup(CTPID, GPIO.OUT, initial=GPIO.LOW)
-GPIO.output(CTPID,GPIO.HIGH)
-
-# print(type(board.SCL))
+GPIO.setup(CTPID, GPIO.OUT, initial=GPIO.HIGH)
 
 # Set up I2C, working on figuring out how to manipulate values so we can connect to different GPIO pins. I'm fairly certain you can just provide the GPIO number
 i2c=busio.I2C(board.SCL, board.SDA)
 mpr121=adafruit_mpr121.MPR121(i2c)
-mpr121.setThresholds(24,6)
 flag=True
 
 try:
 	while True:
-		if mpr121[11].value and flag:
+		# This library doesn't have a function for changing the sensitivity threshold, as a work around, I manually calculate the current capacitence and then use that value to determine if there is touch.
+		# In my experince 120-150 is standard when touching it, and 0-20 is standard when not. For this reason I chose to use 60 as the pivot value.
+		val=abs(mpr121.baseline_data(11)-mpr121.filtered_data(11))
+		if val>60 and flag:
+		# if mpr121[11] and flag:
 			print("Listening")
 			flag=False
 			#create channel
@@ -65,7 +66,8 @@ try:
 				#print result
 				print("Speech Recognition Result: ", parsed_result['text'])
 
-		if not(mpr121[11].value) and not(flag):
+		if not(val>60) and not(flag):
+		# if not(mpr121[11]) and not(flag):
 			print("")
 			flag=True
 
@@ -74,5 +76,5 @@ except:
 	print("Exiting...")
 
 finally:
-	# Always turn off the chip (not technically necessary, but I do it anyway)
+	# Always turn off power to the chip (not technically necessary, but I do it anyway)
 	GPIO.output(CTPID,GPIO.LOW)
